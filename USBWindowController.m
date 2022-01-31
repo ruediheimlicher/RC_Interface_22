@@ -1078,7 +1078,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
    
    int senderfolg= rawhid_send(0, bytebuffer, 64, 50);
    
-   NSLog(@"reportRead_Settings erfolg: %d",senderfolg);
+   NSLog(@"reportRead_Settings erfolg: %d usbstatus: %d",senderfolg,usbstatus);
    free(bytebuffer);
 
 }
@@ -2269,7 +2269,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
          default:
          {
             UInt8 code = (UInt8)buffer[0];
-            fprintf(stderr,"read_USB code: %d\n",code);
+            fprintf(stderr,"read_USB code: %d %X\n",code,code);
             //NSLog(@"code raw result: %d dataRead: %X",result,code );
             if (code)
             {
@@ -3207,16 +3207,16 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
                      int adc0L = (UInt8)buffer[0x3E];// LO
                      int adc0H = (UInt8)buffer[0x3F];// HI
                      int adc0 = adc0L | (adc0H<<8);
-                     
+                     fprintf(stderr,"Batterie : %d\n",adc0);
                      //NSLog(@"Batterie adc0L: %d adc0H: %d adc0: %d",adc0L,adc0H,adc0);
                      if (adc0L)
                      {
                         [ADC_DataFeld setIntValue:adc0];
                         [ADC_Level setIntValue:adc0];
                      }
-                     if (buffer[0x3B])
+                     if (buffer[0x3B]) // 59
                      {
-                        NSLog(@"task_out: %d ",(UInt8)buffer[0x3B]);
+                        fprintf(stderr,"task_out: %d ",(UInt8)buffer[0x3B]);
                      }
                      
                      int pot0L = (UInt8)buffer[1];
@@ -3252,7 +3252,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
                      }
                      if (pot0L && pot1L)
                      {
-                        //fprintf(stderr,"Pot0: \t%d \tPot1: \t%d\n",pot0,pot1);
+                        fprintf(stderr,"Pot0: \t%d \tPot1: \t%d\n",pot0,pot1);
                      }
                      
                      //for (int k=0;k<5;k++)
@@ -3858,7 +3858,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
             } // if code EEPROM_WRITE_TASK
             else 
             {
-               fprintf(stderr,"read_USB code ist 0\n");
+               //fprintf(stderr,"read_USB code ist 0\n");
                
             }
          }break;
@@ -4425,13 +4425,14 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
 	
 	NSNotificationCenter * nc;
 	nc=[NSNotificationCenter defaultCenter];
-// CNC
-    /*
+// USB
+   
+    
 	[nc addObserver:self
-			 selector:@selector(CNCAktion:)
-				  name:@"CNCaktion"
+			 selector:@selector(usbattachAktion:)
+				  name:@"usb_attach"
 				object:nil];
-	*/
+	
 
    [nc addObserver:self
 			 selector:@selector(USBOpen)
@@ -4499,7 +4500,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
       {
          case NSAlertFirstButtonReturn: // Einschalten
          {
-            [self USBOpen];
+            r = [self USBOpen];
             /*
              int  r;
              
@@ -4518,6 +4519,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
              }
              usbstatus=r;
              */
+            usbstatus=r;
          }break;
             
          case NSAlertSecondButtonReturn: // Ignorieren
@@ -4546,7 +4548,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
    {
       NSLog(@"awake found rawhid device");
       [AVR setUSB_Device_Status:1];
-      usbstatus=1;
+      //usbstatus=1;
       //USBStatus=1;
       [self StepperstromEinschalten:1];
    }
@@ -4676,6 +4678,30 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
    }
 }
 
+- (void)usbattachAktion:(NSNotification*) note
+{
+   NSLog(@"usbattachAktion note: %@",[[note userInfo]description]);
+   int status = [[[note userInfo]objectForKey:@"attach"]intValue ];
+   int usb_state = [[[note userInfo]objectForKey:@"usbstatus"]intValue ];
+   fprintf(stderr,"usbattachAktion status: %d usb_state: %d\n",status, usb_state);
+   if (status == USBREMOVED)
+   {
+      NSImage* notok_image = [NSImage imageNamed: @"notok_image"];
+      USB_OK_Feld.image = notok_image;
+      //USBKontrolle.stringValue="USB OFF"
+      fprintf(stderr,"usbattachAktion USBREMOVED \n");
+   }
+  else if (status == USBATTACHED)
+   {
+      NSImage* ok_image = [NSImage imageNamed: @"ok_image"];
+      USB_OK_Feld.image = ok_image;
+     // [USBKontrolle setStringValue:@"USB ON"];
+      
+      fprintf(stderr,"usbattachAktion USBATTACHED\n");
+   }
+
+}
+
 
 - (void)startReadAktion:(NSTimer*)timer
 {
@@ -4688,7 +4714,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
                                                          selector:@selector(Read_SettingsAktion:)
                                                          userInfo:NULL repeats:NO]retain];
 
-   [self setHalt:YES];
+ //  [self setHalt:YES]; // entfernt 220131. ???
 //   [self reportRead_Settings:NULL];
 }
 

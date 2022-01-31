@@ -220,7 +220,7 @@ const char* get_prod()
 //
 int rawhid_send(int num, void *buf, int len, int timeout)
 {
-   //fprintf(stderr,"rawhid_send num: %d\n",num);
+   fprintf(stderr,"rawhid_send num: %d\n",num);
 	hid_t *hid;
 	int result=-100;
    
@@ -317,7 +317,7 @@ int rawhid_open(int max, int vid, int pid, int usage_page, int usage)
    IOReturn ret;
 	hid_t *p;
 	int count=0;
-   //fprintf(stderr,"fprintf rawhid_open\n");
+   fprintf(stderr,"rawhid_open\n");
 	if (first_hid) free_all_hid();
 	//printf("rawhid_open, max=%d\n", max);
    //fflush (stdout); 
@@ -333,8 +333,10 @@ int rawhid_open(int max, int vid, int pid, int usage_page, int usage)
 	if (!hid_manager) 
    {
       hid_manager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
-      if (hid_manager == NULL || CFGetTypeID(hid_manager) != IOHIDManagerGetTypeID()) {
+      if (hid_manager == NULL || CFGetTypeID(hid_manager) != IOHIDManagerGetTypeID()) 
+      {
          if (hid_manager) CFRelease(hid_manager);
+         
          return 0;
       }
 	}
@@ -385,6 +387,7 @@ int rawhid_open(int max, int vid, int pid, int usage_page, int usage)
       IOHIDManagerUnscheduleFromRunLoop(hid_manager,
                                         CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
       CFRelease(hid_manager);
+      fprintf(stderr,"rawhid_open NOT kIOReturnSuccess\n");
       return 0;
    }
 //	printf("run loop\n");
@@ -393,7 +396,9 @@ int rawhid_open(int max, int vid, int pid, int usage_page, int usage)
 	// count up how many were added by the callback
 	for (p = first_hid; p; p = p->next) count++;
    
+   
    usbstatus=count;
+   fprintf(stderr,"rawhid_open usbstatus: %d\n",usbstatus);
 	return count;
 }
 
@@ -465,25 +470,29 @@ void output_callback(void *context, IOReturn ret, void *sender,
 
 static void detach_callback(void *context, IOReturn r, void *hid_mgr, IOHIDDeviceRef dev)
 {
-	hid_t *p;
+   hid_t *p;
    
-	//fprintf(stderr,"detach callback\n");
+   fprintf(stderr,"hid detach callback\n");
    usbstatus=0;
-	for (p = first_hid; p; p = p->next) 
+   for (p = first_hid; p; p = p->next) 
    {
-		if (p->ref == dev) 
+      
+      if (p->ref == dev) 
       {
          
-			p->open = 0;
-			CFRunLoopStop(CFRunLoopGetCurrent());
-			return;
-		}
-	}
-   /*
-   NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-   NSDictionary *NotDic = [NSDictionary  dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:USBREMOVED],@"attach",[NSNumber numberWithInt:usbstatus], nil];
-   [nc postNotificationName:@"usb_attach" object:NULL userInfo:NotDic];
-*/
+         p->open = 0;
+         
+         CFRunLoopStop(CFRunLoopGetCurrent());
+         
+         
+         NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+         NSDictionary *NotDic = [NSDictionary  dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:USBREMOVED],@"attach",[NSNumber numberWithInt:usbstatus],@"usbstatus", nil];
+         [nc postNotificationName:@"usb_attach" object:NULL userInfo:NotDic];
+         
+         return;
+      }
+   }
+   
 }
 
 
@@ -491,7 +500,7 @@ static void attach_callback(void *context, IOReturn r, void *hid_mgr, IOHIDDevic
 {
    struct hid_struct *h;
    
-	fprintf(stderr,"attach callback\n");
+	fprintf(stderr,"hid attach callback\n");
    //
 	if (IOHIDDeviceOpen(dev, kIOHIDOptionsTypeNone) != kIOReturnSuccess) return;
 	h = (hid_t *)malloc(sizeof(hid_t));
@@ -506,7 +515,8 @@ static void attach_callback(void *context, IOReturn r, void *hid_mgr, IOHIDDevic
 	h->open = 1;
    
 	add_hid(h);
-   usbstatus=1; 
+   
+   //usbstatus=1; 
    
    /*
    r = rawhid_open(1, 0x16C0, 0x0480, 0xFFAB, 0x0200);
@@ -521,11 +531,12 @@ static void attach_callback(void *context, IOReturn r, void *hid_mgr, IOHIDDevic
    }
    */
   
-   /*
+   
    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-   NSDictionary *NotDic = [NSDictionary  dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:USBATTACHED],@"attach", nil];
+   NSDictionary *NotDic = [NSDictionary  dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:USBATTACHED],@"attach", [NSNumber numberWithInt:usbstatus],@"usbstatus",nil];
    [nc postNotificationName:@"usb_attach" object:NULL userInfo:NotDic];
-*/
+   fprintf(stderr,"attach notification\n");
+
 }
 
 int usb_present()

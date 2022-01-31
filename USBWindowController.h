@@ -111,7 +111,6 @@
     
 	 IBOutlet    NSPopUpButton*       AdressPop;
    
-   
    IBOutlet    NSButton*            readUSB;
    IBOutlet    NSTextField*			USB_DataFeld;
    IBOutlet    NSTextField*			rundeFeld;
@@ -168,6 +167,8 @@
    
     IBOutlet id       PPMFeldA;
     IBOutlet id       PPMFeldB;
+   
+   IBOutlet NSImageView*  USB_OK_Feld;
    
    NSTimer* EE_WriteTimer;
 	
