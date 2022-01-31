@@ -65,7 +65,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
    
    r = rawhid_open(1, 0x16C1, 0x0481, 0xFFAB, 0x0200);
 // Teensy3.2:    r = rawhid_open(1, 0x16C0, 0x0486, 0xFFAB, 0x0200);
-
+   usbstatus=r;
    if (r <= 0) 
    {
       NSLog(@"USBOpen: no rawhid device found");
@@ -73,6 +73,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
    }
    else
    {
+      
       NSLog(@"USBOpen: found rawhid device %d",usbstatus);
       //[AVR setUSB_Device_Status:1];
       const char* manu = get_manu();
@@ -91,7 +92,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
 
       
    }
-   usbstatus=r;
+   
    
    return r;
 }
@@ -2204,19 +2205,20 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
    {
       if (result)
       {
-         //fprintf(stderr,"USB Eingang:\t"); // Potentiometerstellungen
+         /*
+         fprintf(stderr,"USB Eingang:\t"); // Potentiometerstellungen
          for (int i=0;i<8;i++)
          {
- //           UInt8 wertL = (UInt8)buffer[2*i];
- //           UInt8 wertH = ((UInt8)buffer[2*i+1]);
- //           int wert = wertL | (wertH<<8);
-            //int wert = wertL + (wertH );
-            //  fprintf(stderr,"%d\t%d\t%d\t",wertL,wertH,(wert));
-           // fprintf(stderr,"%X\t",(buffer[i]& 0xFF));
-           // fprintf(stderr," | ");
+            UInt8 wertL = (UInt8)buffer[2*i];
+            UInt8 wertH = ((UInt8)buffer[2*i+1]);
+            int wert = wertL | (wertH<<8);
+            //fprintf(stderr,"%d\t%d\t%d\t",wertL,wertH,(wert));
+            fprintf(stderr,"%d\t",(wert));
+           fprintf(stderr,"%X\t",(buffer[i]& 0xFF));
+           fprintf(stderr," | ");
          }
-         //fprintf(stderr,"\n");
-
+         fprintf(stderr,"\n");
+*/
          
       }
      // NSLog(@"result: %d dataRead: %@",result,[dataRead description]);
@@ -2263,13 +2265,15 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
          //case EEPROM_WRITE_TASK:
          //case EEPROM_READ_TASK:
          //case EEPROM_AUSGABE_TASK:
-            fprintf(stderr,"read_USB code: %d\n",buffer[0]);
+            
          default:
          {
             UInt8 code = (UInt8)buffer[0];
+            fprintf(stderr,"read_USB code: %d\n",code);
             //NSLog(@"code raw result: %d dataRead: %X",result,code );
             if (code)
             {
+               
                switch (code)
                {
                   case 0xB0:
@@ -3204,7 +3208,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
                      int adc0H = (UInt8)buffer[0x3F];// HI
                      int adc0 = adc0L | (adc0H<<8);
                      
-                     NSLog(@"Batterie adc0L: %d adc0H: %d adc0: %d",adc0L,adc0H,adc0);
+                     //NSLog(@"Batterie adc0L: %d adc0H: %d adc0: %d",adc0L,adc0H,adc0);
                      if (adc0L)
                      {
                         [ADC_DataFeld setIntValue:adc0];
@@ -3248,7 +3252,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
                      }
                      if (pot0L && pot1L)
                      {
-                       // fprintf(stderr,"\t%d\t%d\n",pot0,pot1);
+                        //fprintf(stderr,"Pot0: \t%d \tPot1: \t%d\n",pot0,pot1);
                      }
                      
                      //for (int k=0;k<5;k++)
@@ -3306,8 +3310,8 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
                      fprintf(stderr,"F0 Eingang von LCD\n");
                      
                      int pos0 = buffer[USB_DATENBREITE] << 8 | buffer[USB_DATENBREITE + 1] ;
-                     fprintf(stderr,"F0 pos0: %d\n",pos0);
-                     
+                     //fprintf(stderr,"F0 pos0: %d\n",pos0);
+                     /*
                      for (int k=0;k<8;k++)
                         
                      {
@@ -3315,8 +3319,8 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
                         //fprintf(stderr," | ");
                      }
                      fprintf(stderr,"\n");
-                     
-                     
+                     */
+                     /*
                      for (int k=USB_DATENBREITE/2;k<USB_DATENBREITE/2+8;k++)
                         
                      {
@@ -3340,7 +3344,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
                      }
                      fprintf(stderr,"\n");
                     // fprintf(stderr,"\n");
-
+                      */
                      
                   }break;
                      

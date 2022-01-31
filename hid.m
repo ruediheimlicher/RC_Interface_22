@@ -479,10 +479,11 @@ static void detach_callback(void *context, IOReturn r, void *hid_mgr, IOHIDDevic
 			return;
 		}
 	}
+   /*
    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
    NSDictionary *NotDic = [NSDictionary  dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:USBREMOVED],@"attach",[NSNumber numberWithInt:usbstatus], nil];
    [nc postNotificationName:@"usb_attach" object:NULL userInfo:NotDic];
-
+*/
 }
 
 
@@ -520,10 +521,11 @@ static void attach_callback(void *context, IOReturn r, void *hid_mgr, IOHIDDevic
    }
    */
   
+   /*
    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-   NSDictionary *NotDic = [NSDictionary  dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:USBATTACHED],@"attach",[NSNumber numberWithInt:usbstatus], nil];
+   NSDictionary *NotDic = [NSDictionary  dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:USBATTACHED],@"attach", nil];
    [nc postNotificationName:@"usb_attach" object:NULL userInfo:NotDic];
-
+*/
 }
 
 int usb_present()
