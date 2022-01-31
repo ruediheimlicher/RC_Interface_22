@@ -4714,7 +4714,7 @@ void DeviceRemoved(void *refCon, io_iterator_t iterator)
                                                          selector:@selector(Read_SettingsAktion:)
                                                          userInfo:NULL repeats:NO]retain];
 
- //  [self setHalt:YES]; // entfernt 220131. ???
+ //  [self setHalt:YES];
 //   [self reportRead_Settings:NULL];
 }
 
